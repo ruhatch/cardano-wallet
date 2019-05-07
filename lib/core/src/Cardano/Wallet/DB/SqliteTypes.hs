@@ -9,12 +9,14 @@ import Prelude
 
 import Cardano.Wallet.Primitive.Types
     ( Direction (..) )
+import Data.Bifunctor
+    ( first )
 import Data.Proxy
     ( Proxy (..) )
 import Data.Text
     ( Text )
 import Data.Text.Class
-    ( FromText (..), TextDecodingError (..), ToText (..) )
+    ( ToText (..) )
 import Database.Persist.Sqlite
     ( PersistField (..), PersistFieldSql (..) )
 
@@ -24,23 +26,8 @@ instance PersistField Direction where
     toPersistValue =
         toPersistValue . toText
     fromPersistValue pv = do
-        a <- fromText <$> fromPersistValue pv
-        case a of
-             Left _     ->
-                 Left . T.pack $ "not a valid value: " <> show pv
-             Right direction ->
-                 pure direction
+        let err = T.pack $ "not a valid value: " <> show pv
+        first (const err) (fromPersistValue pv)
 
 instance PersistFieldSql Direction where
     sqlType _ = sqlType (Proxy @Text)
-
-instance FromText Direction where
-    fromText txt = case txt of
-        "Outgoing" -> Right Outgoing
-        "Incoing" -> Right Incoming
-        _ ->
-            Left . TextDecodingError $ "not a valid value: " <> show txt
-
-instance ToText Direction where
-    toText Outgoing = "Outgoing"
-    toText Incoming = "Incoming"

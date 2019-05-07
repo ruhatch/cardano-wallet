@@ -41,7 +41,6 @@ library
     , containers
     , cryptonite
     , deepseq
-    , esqueleto
     , exceptions
     , fmt
     , generic-lens
@@ -53,7 +52,6 @@ library
     , persistent-template
     , servant
     , servant-server
-    , sqlite-simple
     , text
     , text-class
     , time
