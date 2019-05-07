@@ -61,6 +61,8 @@ TxInput
   txInputAddress        Text                   sql=address
   txInputAmount         Word64                 sql=amount
 
+  Primary txInputTxId txInputSourceTxId txInputSourceIndex
+
   deriving Show Generic
 
 TxOutput
@@ -68,6 +70,8 @@ TxOutput
   txOutputIndex         Word32                 sql=index
   txOutputAddress       Text                   sql=address
   txOutputAmount        Word64                 sql=amount
+
+  Primary txOutputTxId txOutputIndex
 
   deriving Show Generic
 |]
