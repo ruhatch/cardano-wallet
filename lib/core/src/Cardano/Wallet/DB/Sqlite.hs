@@ -37,7 +37,7 @@ newtype TxId = TxId { getTxId :: Hash "Tx" } deriving (Show, Generic)
 
 share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAll" ] [persistLowerCase|
 Wallet
-  walletId              Text                   sql=id
+  walletId              WalletId               sql=id
   walletName            Text                   sql=name
 
   Primary walletId
