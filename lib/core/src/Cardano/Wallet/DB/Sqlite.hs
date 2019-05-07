@@ -44,11 +44,11 @@ Wallet
   deriving Show Generic
 
 TxMeta
-  txMetaId              Text                   sql=id
-  txMetaWalletId        Text                   sql=wallet_id
-  txMetaDirection       Text                   sql=direction
-  txMetaSlotId          Word64                 sql=slot_id
-  txAmount              Word64                 sql=amount
+  txMetaId              TxId                   sql=tx_id
+  txMetaWalletId        WalletId               sql=wallet_id
+  txMetaDirection       Direction              sql=direction
+  txMetaSlotId          SlotId                 sql=slot_id
+  txMetaAmount          Word64                 sql=amount
 
   Primary txMetaId txMetaWalletId
 
