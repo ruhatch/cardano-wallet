@@ -10,34 +10,36 @@ module Cardano.Wallet.DB.Sqlite where
 
 import Prelude
 
+import Data.Proxy
+    ( Proxy (..) )
 import Data.Text
     ( Text )
 import qualified Data.Text as T
-
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Word
-    ( Word64 )
+    ( Word32, Word64 )
+import GHC.Generics
+    ( Generic (..) )
+
 import qualified Database.Esqueleto as E
 import Database.Persist.Sqlite as Persist
 import Database.Persist.TH
 import qualified Database.Sqlite as Sqlite
 
 import Cardano.Wallet.Primitive.Types
-    ( Direction, Hash (..), SlotId, WalletId (..) )
+    ( Direction, Hash (..), SlotId )
+import qualified Cardano.Wallet.Primitive.Types as W
+
 import Data.Quantity
     ( Quantity )
 import Data.Text.Class
     ( FromText (..), TextDecodingError (..), ToText (..) )
-import GHC.Generics
-    ( Generic (..) )
 
+-- Wraps Hash "Tx" because the persistent dsl doesn't like (Hash "Tx")
 newtype TxId = TxId { getTxId :: Hash "Tx" } deriving (Show, Generic)
--- type TxId = Text
 
 share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAll" ] [persistLowerCase|
 Wallet
-  walletId              WalletId               sql=id
+  walletId              W.WalletId             sql=id
   walletName            Text                   sql=name
 
   Primary walletId
@@ -45,7 +47,7 @@ Wallet
 
 TxMeta
   txMetaId              TxId                   sql=tx_id
-  txMetaWalletId        WalletId               sql=wallet_id
+  txMetaWalletId        W.WalletId             sql=wallet_id
   txMetaDirection       Direction              sql=direction
   txMetaSlotId          SlotId                 sql=slot_id
   txMetaAmount          Word64                 sql=amount
@@ -76,18 +78,7 @@ TxOutput
   deriving Show Generic
 |]
 
-{-
-instance (ToText a, FromText a) => PersistField a where
-    toPersistValue =
-        toPersistValue . toText
-    fromPersistValue pv = do
-        res <- fromText <$> fromPersistValue pv
-        case res of
-             Left _ -> Left $ "not a valid value: " <> show pv
-             Right a -> pure a
--}
-
-instance PersistField WalletId where
+instance PersistField W.WalletId where
     toPersistValue =
         toPersistValue . toText
     fromPersistValue pv = do
@@ -109,7 +100,7 @@ instance PersistField TxId where
              Right txid ->
                  pure (TxId txid)
 
-instance PersistFieldSql WalletId where
+instance PersistFieldSql W.WalletId where
     sqlType _ = sqlType (Proxy @Text)
 
 instance PersistFieldSql TxId where
