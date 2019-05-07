@@ -41,19 +41,25 @@ library
     , containers
     , cryptonite
     , deepseq
+    , esqueleto
     , exceptions
     , fmt
     , generic-lens
     , http-api-data
     , http-media
     , memory
+    , persistent
+    , persistent-sqlite
+    , persistent-template
     , servant
     , servant-server
+    , sqlite-simple
     , text
     , text-class
     , time
     , transformers
     , vector
+
   hs-source-dirs:
       src
   exposed-modules:
@@ -63,6 +69,7 @@ library
       Cardano.Wallet.Api.Types
       Cardano.Wallet.DB
       Cardano.Wallet.DB.MVar
+      Cardano.Wallet.DB.Sqlite
       Cardano.Wallet.Network
       Cardano.Wallet.Primitive.AddressDerivation
       Cardano.Wallet.Primitive.AddressDiscovery
