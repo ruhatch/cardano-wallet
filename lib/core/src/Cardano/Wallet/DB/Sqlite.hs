@@ -14,7 +14,7 @@ module Cardano.Wallet.DB.Sqlite where
 import Prelude
 
 import Cardano.Wallet.DB.SqliteTypes
-    ()
+    ( TxId )
 import Cardano.Wallet.Primitive.Types
     ( Direction, SlotId )
 import Data.Text
@@ -27,9 +27,6 @@ import GHC.Generics
 
 import qualified Cardano.Wallet.Primitive.Types as W
 
--- fixme: foreign keys from input/output to txmeta
--- fixme: SlotId to Word64
-
 share
     [ mkPersist sqlSettings { mpsPrefixFields = False }
     , mkMigrate "migrateAll"
@@ -39,13 +36,21 @@ share
 Wallet
   walId                W.WalletId              sql=wallet_id
   walName              Text                    sql=name
-  walPrivateKey        Text                    sql=private_key
 
   Primary walId
   deriving Show Generic
 
+WalletPrivateKey sql=private_key
+  walPrivateKeyWalId   W.WalletId              sql=wallet_id
+  walPrivateKey        Text                    sql=private_key
+
+  Primary walPrivateKeyWalId
+  Foreign Wallet fk_wallet_private_key walPrivateKeyWalId
+
+  deriving Show Generic
+
 TxMeta
-  txId                  Text                   sql=tx_id
+  txId                  TxId                   sql=tx_id
   txMetaWalletId        W.WalletId             sql=wallet_id
   -- txStatus             W.TxStatus             sql=status
   txMetaDirection       Direction              sql=direction
@@ -53,11 +58,12 @@ TxMeta
   txMetaAmount          Word64                 sql=amount
 
   Primary txId txMetaWalletId
+  Foreign Wallet fk_wallet_tx_meta txMetaWalletId
   deriving Show Generic
 
 TxInput
-  txInputTxId           Text                   sql=tx_id
-  txInputSourceTxId     Text                   sql=source_id
+  txInputTxId           TxId                   sql=tx_id
+  txInputSourceTxId     TxId                   sql=source_id
   txInputSourceIndex    Word32                 sql=source_index
   txInputAddress        Text                   sql=address
   txInputAmount         Word64                 sql=amount
@@ -67,37 +73,44 @@ TxInput
   deriving Show Generic
 
 TxOutput
-  txOutputTxId          Text                   sql=tx_id
+  txOutputTxId          TxId                   sql=tx_id
   txOutputIndex         Word32                 sql=index
   txOutputAddress       Text                   sql=address
   txOutputAmount        Word64                 sql=amount
 
   Primary txOutputTxId txOutputIndex
+  -- constraint: tx_id must exist in TxMeta
   deriving Show Generic
 
 Utxo
   utxoWalletId          W.WalletId             sql=wallet_id
-  utxoTxOutputTxId      Text                   sql=tx_id
+  utxoTxOutputTxId      TxId                   sql=tx_id
   utxoTxOutputIndex     Word32                 sql=index
 
-  -- foreign key: wallet_id in Wallet
-  -- foreign key: (tx_id, index) in TxOutput
+  Primary utxoWalletId utxoTxOutputTxId utxoTxOutputIndex
+  Foreign Wallet fk_wallet_utxo utxoWalletId
+  Foreign TxOutput fk_tx_output_utxo utxoTxOutputTxId utxoTxOutputIndex
+
   deriving Show Generic
 
 Checkpoint
   checkpointWalId       W.WalletId             sql=wallet_id
   checkpointWalSlot     SlotId                 sql=slot_id
 
-  -- foreign key: wallet_id in Wallet
+  Primary checkpointWalId checkpointWalSlot
+  Foreign Wallet fk_wallet_checkpoint checkpointWalId
 
   deriving Show Generic
 
-PendingTxInput
-  pendingWalletId      W.WalletId             sql=wallet_id
-  pendingSlotId        SlotId                 sql=slot_id
-  pendingTxInputTxId   Text                   sql=tx_id
+PendingTx
+  pendingTxId2         TxId                   sql=tx_id
+  pendingTxWalletId    W.WalletId             sql=wallet_id
+  pendingTxSlotId      SlotId                 sql=slot_id
 
-  -- foreign key: (wallet_id, slot_id) in Checkpoint
+  Primary pendingTxId2
+  Foreign Checkpoint fk_checkpoint_pending_tx pendingTxWalletId pendingTxSlotId
+  -- constraint: Inputs and outputs come from TxInput and TxOutput
 
   deriving Show Generic
+
 |]
