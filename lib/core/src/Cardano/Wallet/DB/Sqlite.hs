@@ -27,7 +27,7 @@ import GHC.Generics
 
 import qualified Cardano.Wallet.Primitive.Types as W
 
--- fixme: need tables for wallet address state
+-- fixme: need tables for wallet AddressPool
 
 share
     [ mkPersist sqlSettings { mpsPrefixFields = False }

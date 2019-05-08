@@ -125,6 +125,14 @@ test-suite unit
     , text-class
     , transformers
     , yaml
+
+    , persistent
+    , persistent-sqlite
+    , persistent-template
+    , conduit
+    , unliftio-core
+    , monad-logger
+    , mtl
   type:
      exitcode-stdio-1.0
   hs-source-dirs:
@@ -135,6 +143,7 @@ test-suite unit
       Cardano.Wallet.Api.TypesSpec
       Cardano.Wallet.ApiSpec
       Cardano.Wallet.DB.MVarSpec
+      Cardano.Wallet.DB.SqliteSpec
       Cardano.Wallet.DBSpec
       Cardano.Wallet.NetworkSpec
       Cardano.Wallet.Primitive.AddressDerivationSpec
