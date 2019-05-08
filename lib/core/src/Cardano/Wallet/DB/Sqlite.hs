@@ -30,7 +30,11 @@ import qualified Cardano.Wallet.Primitive.Types as W
 -- fixme: foreign keys from input/output to txmeta
 -- fixme: SlotId to Word64
 
-share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAll" ] [persistLowerCase|
+share
+    [ mkPersist sqlSettings { mpsPrefixFields = False }
+    , mkMigrate "migrateAll"
+    ]
+    [persistLowerCase|
 
 Wallet
   walId                W.WalletId              sql=wallet_id
