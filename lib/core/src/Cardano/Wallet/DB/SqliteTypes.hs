@@ -31,7 +31,7 @@ import Web.PathPieces
 import qualified Data.Text as T
 
 import Cardano.Wallet.Primitive.Types
-    ( Direction (..), Hash (..), WalletId (..) )
+    ( Direction (..), Hash (..), SlotId (..), WalletId (..) )
 
 
 instance PersistField Direction where
@@ -80,6 +80,9 @@ instance PersistFieldSql WalletId where
     sqlType _ = sqlType (Proxy @Text)
 
 instance PersistFieldSql TxId where
+    sqlType _ = sqlType (Proxy @Text)
+
+instance PersistFieldSql SlotId where
     sqlType _ = sqlType (Proxy @Text)
 
 instance Read WalletId where

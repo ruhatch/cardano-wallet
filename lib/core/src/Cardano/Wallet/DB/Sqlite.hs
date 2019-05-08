@@ -16,7 +16,7 @@ import Prelude
 import Cardano.Wallet.DB.SqliteTypes
     ()
 import Cardano.Wallet.Primitive.Types
-    ( Direction )
+    ( Direction, SlotId )
 import Data.Text
     ( Text )
 import Data.Word
@@ -35,6 +35,7 @@ share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAl
 Wallet
   walId                W.WalletId              sql=wallet_id
   walName              Text                    sql=name
+  walPrivateKey        Text                    sql=private_key
 
   Primary walId
   deriving Show Generic
@@ -42,9 +43,9 @@ Wallet
 TxMeta
   txId                  Text                   sql=tx_id
   txMetaWalletId        W.WalletId             sql=wallet_id
+  -- txStatus             W.TxStatus             sql=status
   txMetaDirection       Direction              sql=direction
-  txMetaEpoch           Word64                 sql=epoch
-  txMetaLocalSlot       Word32                 sql=local_slot
+  txMetaSlotId          SlotId                 sql=slot_id
   txMetaAmount          Word64                 sql=amount
 
   Primary txId txMetaWalletId
@@ -58,6 +59,7 @@ TxInput
   txInputAmount         Word64                 sql=amount
 
   Primary txInputTxId txInputSourceTxId txInputSourceIndex
+  -- constraint: tx_id must exist in TxMeta
   deriving Show Generic
 
 TxOutput
@@ -70,9 +72,28 @@ TxOutput
   deriving Show Generic
 
 Utxo
-  txinId                TxInputId              sql=txin_id
-  txoutId               TxOutputId             sql=txout_id
+  utxoWalletId          W.WalletId             sql=wallet_id
+  utxoTxOutputTxId      Text                   sql=tx_id
+  utxoTxOutputIndex     Word32                 sql=index
 
-  Primary txinId txoutId
+  -- foreign key: wallet_id in Wallet
+  -- foreign key: (tx_id, index) in TxOutput
+  deriving Show Generic
+
+Checkpoint
+  walId                W.WalletId              sql=wallet_id
+  walSlot              SlotId                  sql=slot_id
+
+  -- foreign key: wallet_id in Wallet
+
+  deriving Show Generic
+
+PendingTxInput
+  pendingWalletId      W.WalletId             sql=wallet_id
+  pendingSlotId        SlotId                 sql=slot_id
+  pendingTxInputTxId   Text                   sql=tx_id
+
+  -- foreign key: (wallet_id, slot_id) in Checkpoint
+
   deriving Show Generic
 |]
