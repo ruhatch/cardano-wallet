@@ -20,7 +20,7 @@ import Cardano.Wallet.Primitive.Types
 import Data.Text
     ( Text )
 import Data.Word
-    ( Word16, Word32, Word64 )
+    ( Word32, Word64 )
 import Database.Persist.TH
 import GHC.Generics
     ( Generic (..) )
@@ -85,8 +85,8 @@ Utxo
   deriving Show Generic
 
 Checkpoint
-  walId                W.WalletId              sql=wallet_id
-  walSlot              SlotId                  sql=slot_id
+  checkpointWalId       W.WalletId             sql=wallet_id
+  checkpointWalSlot     SlotId                 sql=slot_id
 
   -- foreign key: wallet_id in Wallet
 
