@@ -99,9 +99,9 @@ Utxo
   utxoTxOutputCoin      Word64                 sql=output_coin
   -- fixme: not quite correct
 
-  Primary utxoWalletId utxoWalSlot utxoTxOutputTxId utxoTxOutputIndex
-  Foreign Checkpoint fk_checkpoint_utxo utxoWalletId
-  Foreign TxOutput fk_tx_output_utxo utxoTxOutputTxId utxoTxOutputIndex
+  Primary utxoWalletId utxoWalSlot utxoTxInputTxId utxoTxInputIndex
+  --Foreign Checkpoint fk_checkpoint_utxo utxoWalletId
+  Foreign TxOutput fk_tx_output_utxo utxoTxInputTxId utxoTxInputIndex
 
   deriving Show Generic
 
