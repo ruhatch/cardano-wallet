@@ -85,6 +85,10 @@ instance PersistFieldSql TxId where
 instance PersistFieldSql SlotId where
     sqlType _ = sqlType (Proxy @Text)
 
+instance PersistField SlotId where
+    toPersistValue = undefined
+    fromPersistValue = undefined
+
 instance Read WalletId where
     readsPrec _ = undefined -- fixme: bomb
 
