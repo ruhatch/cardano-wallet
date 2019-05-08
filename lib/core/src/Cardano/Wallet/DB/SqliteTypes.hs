@@ -15,19 +15,20 @@ import Data.Bifunctor
     ( bimap, first )
 import Data.Proxy
     ( Proxy (..) )
+import Data.Quantity
+    ( Percentage (..), Quantity (..), mkPercentage )
 import Data.Text
     ( Text )
 import Data.Text.Class
     ( FromText (..), ToText (..), fromTextMaybe, getTextDecodingError )
 import Data.Word
-    ( Word64 )
+    ( Word64, Word8 )
 import Database.Persist.Sqlite
     ( PersistField (..), PersistFieldSql (..) )
 import GHC.Generics
     ( Generic )
 import Web.HttpApiData
 import Web.PathPieces
-
 
 import qualified Data.Text as T
 
@@ -36,6 +37,7 @@ import Cardano.Wallet.Primitive.Types
     , Hash (..)
     , SlotId (..)
     , WalletId (..)
+    , WalletState (..)
     , flatSlot
     , fromFlatSlot
     )
@@ -167,4 +169,33 @@ instance ToJSON SlotId where
     toJSON = genericToJSON defaultOptions
 
 instance FromJSON SlotId where
+    parseJSON = genericParseJSON defaultOptions
+
+----------------------------------------------------------------------------
+-- WalletState
+
+walletStateNum :: WalletState -> Word8
+walletStateNum Ready = 100
+walletStateNum (Restoring (Quantity pc)) = n
+    where Just n = decode (encode pc) -- fixme: naff
+
+walletStateFromNum :: Word8 -> WalletState
+walletStateFromNum n | n < 100 = Restoring (Quantity pc)
+                     | otherwise = Ready
+    where Right pc = mkPercentage n
+
+instance PersistField WalletState where
+    toPersistValue = toPersistValue . walletStateNum
+    fromPersistValue = fmap walletStateFromNum . fromPersistValue
+
+instance PersistFieldSql WalletState where
+    sqlType _ = sqlType (Proxy @Text)
+
+instance Read WalletState where
+    readsPrec = undefined -- fixme: bomb
+
+instance ToJSON WalletState where
+    toJSON = genericToJSON defaultOptions
+
+instance FromJSON WalletState where
     parseJSON = genericParseJSON defaultOptions
