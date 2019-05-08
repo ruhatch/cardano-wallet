@@ -77,7 +77,7 @@ TxInput
   txInputAmount         Word64                 sql=amount
 
   Primary txInputTxId txInputSourceTxId txInputSourceIndex
-  -- constraint: tx_id must exist in TxMeta
+  -- constraint: tx_id must exist in TxMeta or PendingTx
   deriving Show Generic
 
 TxOutput
@@ -87,16 +87,20 @@ TxOutput
   txOutputAmount        Word64                 sql=amount
 
   Primary txOutputTxId txOutputIndex
-  -- constraint: tx_id must exist in TxMeta
+  -- constraint: tx_id must exist in TxMeta or PendingTx
   deriving Show Generic
 
 Utxo
   utxoWalletId          W.WalletId             sql=wallet_id
-  utxoTxOutputTxId      TxId                   sql=tx_id
-  utxoTxOutputIndex     Word32                 sql=index
+  utxoWalSlot           W.SlotId               sql=slot_id
+  utxoTxInputTxId       TxId                   sql=input_tx_id
+  utxoTxInputIndex      Word32                 sql=input_index
+  utxoTxOutputAddress   Text                   sql=output_address
+  utxoTxOutputCoin      Word64                 sql=output_coin
+  -- fixme: not quite correct
 
-  Primary utxoWalletId utxoTxOutputTxId utxoTxOutputIndex
-  Foreign Wallet fk_wallet_utxo utxoWalletId
+  Primary utxoWalletId utxoWalSlot utxoTxOutputTxId utxoTxOutputIndex
+  Foreign Checkpoint fk_checkpoint_utxo utxoWalletId
   Foreign TxOutput fk_tx_output_utxo utxoTxOutputTxId utxoTxOutputIndex
 
   deriving Show Generic
