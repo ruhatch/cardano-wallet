@@ -606,7 +606,7 @@ slotRatio a b =
         n0 = flatSlot a
         n1 = flatSlot b
         tolerance = 5
-    in if distance n0 n1 < tolerance then
+    in if distance n0 n1 < tolerance || n0 >= n1 then
         maxBound
     else
         Quantity $ toEnum $ fromIntegral $ (100 * n0) `div` n1
