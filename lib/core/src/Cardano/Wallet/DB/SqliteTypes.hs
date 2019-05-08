@@ -16,7 +16,7 @@ import Data.Bifunctor
 import Data.Proxy
     ( Proxy (..) )
 import Data.Quantity
-    ( Percentage (..), Quantity (..), mkPercentage )
+    ( Quantity (..), mkPercentage )
 import Data.Text
     ( Text )
 import Data.Text.Class
