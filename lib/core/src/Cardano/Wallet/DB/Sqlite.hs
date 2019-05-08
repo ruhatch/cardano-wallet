@@ -15,10 +15,10 @@ import Prelude
 
 import Cardano.Wallet.DB.SqliteTypes
     ( TxId )
-import Cardano.Wallet.Primitive.Types
-    ( Direction, SlotId )
 import Data.Text
     ( Text )
+import Data.Time.Clock
+    ( UTCTime )
 import Data.Word
     ( Word32, Word64 )
 import Database.Persist.TH
@@ -26,6 +26,8 @@ import GHC.Generics
     ( Generic (..) )
 
 import qualified Cardano.Wallet.Primitive.Types as W
+
+-- fixme: need tables for wallet address state
 
 share
     [ mkPersist sqlSettings { mpsPrefixFields = False }
@@ -36,6 +38,12 @@ share
 Wallet
   walId                W.WalletId              sql=wallet_id
   walName              Text                    sql=name
+  walPassphraseLastUpdatedAt   UTCTime         sql=passphrase_last_updated_at
+  walStatus            W.WalletState           sql=status
+  walDelegation        Text Maybe              sql=delegation
+
+  -- indicates the address scheme used by this wallet -- seq or rnd
+  walAddressScheme     Text                    sql=address_discovery
 
   Primary walId
   deriving Show Generic
@@ -53,8 +61,8 @@ TxMeta
   txId                  TxId                   sql=tx_id
   txMetaWalletId        W.WalletId             sql=wallet_id
   -- txStatus             W.TxStatus             sql=status
-  txMetaDirection       Direction              sql=direction
-  txMetaSlotId          SlotId                 sql=slot_id
+  txMetaDirection       W.Direction            sql=direction
+  txMetaSlotId          W.SlotId                 sql=slot_id
   txMetaAmount          Word64                 sql=amount
 
   Primary txId txMetaWalletId
@@ -95,7 +103,7 @@ Utxo
 
 Checkpoint
   checkpointWalId       W.WalletId             sql=wallet_id
-  checkpointWalSlot     SlotId                 sql=slot_id
+  checkpointWalSlot     W.SlotId               sql=slot_id
 
   Primary checkpointWalId checkpointWalSlot
   Foreign Wallet fk_wallet_checkpoint checkpointWalId
@@ -105,12 +113,11 @@ Checkpoint
 PendingTx
   pendingTxId2         TxId                   sql=tx_id
   pendingTxWalletId    W.WalletId             sql=wallet_id
-  pendingTxSlotId      SlotId                 sql=slot_id
+  pendingTxSlotId      W.SlotId               sql=slot_id
 
   Primary pendingTxId2
   Foreign Checkpoint fk_checkpoint_pending_tx pendingTxWalletId pendingTxSlotId
   -- constraint: Inputs and outputs come from TxInput and TxOutput
 
   deriving Show Generic
-
 |]
