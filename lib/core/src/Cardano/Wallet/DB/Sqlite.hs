@@ -2,6 +2,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
@@ -23,29 +25,29 @@ import Database.Persist.TH
 import GHC.Generics
     ( Generic (..) )
 
-share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAll" ] [persistLowerCase|
-Slot
-  epochNumber           Word64                 sql=epoch
-  slotNumber            Word16                 sql=slot
+import qualified Cardano.Wallet.Primitive.Types as W
 
-  Primary epochNumber slotNumber
-  deriving Show Generic
+-- fixme: foreign keys from input/output to txmeta
+-- fixme: SlotId to Word64
+
+share [ mkPersist sqlSettings { mpsPrefixFields = False } , mkMigrate "migrateAll" ] [persistLowerCase|
 
 Wallet
-  walId                Text                    sql=wallet_id
+  walId                W.WalletId              sql=wallet_id
   walName              Text                    sql=name
 
-  Primary walId walName
+  Primary walId
   deriving Show Generic
 
 TxMeta
-  theTxMetaId           Text                   sql=tx_id
-  txMetaWalletId        WalletId               sql=wallet_id
+  txId                  Text                   sql=tx_id
+  txMetaWalletId        W.WalletId             sql=wallet_id
   txMetaDirection       Direction              sql=direction
-  txMetaSlotId          SlotId                 sql=slot_id
+  txMetaEpoch           Word64                 sql=epoch
+  txMetaLocalSlot       Word32                 sql=local_slot
   txMetaAmount          Word64                 sql=amount
 
-  Primary theTxMetaId txMetaWalletId
+  Primary txId txMetaWalletId
   deriving Show Generic
 
 TxInput
